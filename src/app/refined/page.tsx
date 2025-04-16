@@ -16,6 +16,7 @@ export default function RefinedPage() {
     }
   }, [cleanedPages]);
 
+  // Make sure to remove the response from the storage to save a new one.
   useEffect(() => {
     if (parsedData?.length > 0) {
       localStorage.removeItem("cleanedPages");
@@ -84,14 +85,28 @@ export default function RefinedPage() {
     fetchAIData();
   }, [parsedData]);
 
+  // Loading UI while waiting for Gemini's response
   const renderSentence = (sentence: any, key: string) => {
     const isHovered = hoveredSentence === key;
+    // Merge parts into plain text for TTS
+    const plainText =
+      typeof sentence === "string"
+        ? sentence
+        : sentence.map((part: any) => part.text).join("");
+
+    const speak = () => {
+      const utterance = new SpeechSynthesisUtterance(plainText);
+      utterance.lang = "en-US"; // Optional: Customize language
+      window.speechSynthesis.cancel(); // Stop current speech
+      window.speechSynthesis.speak(utterance);
+    };
 
     return (
       <span
         key={key}
         onMouseEnter={() => setHoveredSentence(key)}
         onMouseLeave={() => setHoveredSentence(null)}
+        onClick={speak} // 🔊 Play sentence when clicked
         className={`inline-block rounded px-1 ${
           isHovered ? "bg-red-300 transition" : "transition"
         } mr-1`}
@@ -123,14 +138,17 @@ export default function RefinedPage() {
       <div className="mx-32 py-10 border-2">
         {cleanedPages.map((page, pageIndex) => (
           <div key={pageIndex}>
-            <h2 className="text-xl font-semibold mb-6">Page {pageIndex + 1}</h2>
+            <h2 className="font-semibold mb-6">Page {pageIndex + 1}</h2>
             {/* Iterate through each block in the page (title, subtitle, paragraph) */}
             {page.map((block: any, idx: number) => (
               <div key={idx} className="mb-12">
                 {/* Each block contains multiple paragraphs (array of sentence arrays) */}
                 {block.sentences?.map((paragraph: any[], pIdx: number) => (
                   // Render each paragraph with bottom margin and proper line height
-                  <p key={pIdx} className="mb-4 leading-7">
+                  <p
+                    key={pIdx}
+                    className="paragraph mb-4 leading-7 cursor-pointer"
+                  >
                     {/* Render each sentence inside the paragraph */}
                     {paragraph.map((sentence, sIdx) =>
                       renderSentence(

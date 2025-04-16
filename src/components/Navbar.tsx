@@ -23,6 +23,16 @@ export default function Navbar() {
   }, [spacing]);
 
   // Give change to font size
+  // Apply once when component mounts
+  useEffect(() => {
+    const clamped = Math.min(1.5, Math.max(0.8, fontScale));
+    document.documentElement.style.setProperty(
+      "--user-font-scale",
+      clamped.toString()
+    );
+  }, []); // 👈 run once at mount
+
+  // And again when fontScale changes
   useEffect(() => {
     const clamped = Math.min(1.5, Math.max(0.8, fontScale));
     document.documentElement.style.setProperty(

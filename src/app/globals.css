@@ -89,6 +89,7 @@ body {
       rgb(var(--background-end-rgb))
     )
     rgb(var(--background-start-rgb));
+    font-size: calc(1rem * var(--user-font-scale));
 }
 /* 
 .dark {
